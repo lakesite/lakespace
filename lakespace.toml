@@ -1,0 +1,12 @@
+[applicant]
+browser = 'firefox'
+tabs = [
+	"https://github.com/lakesite/lakespace",
+	"https://github.com/mozilla/multi-account-containers/issues/319",
+	"https://github.com/toml-lang/toml",
+	"https://github.com/ogt/valid-url"
+]
+
+[ide]
+editor = 'atom'
+path = ''

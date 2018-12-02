@@ -97,21 +97,12 @@ var tree = function (data) {
   });
 }
 
-console.log(`Got: ${args}`);
-
-
 if (args != '') {
   configuration = args;
 }
-
-return
 
 var str = fs.readFileSync("./workspace.toml", 'utf8')
 var parsed = toml.parse(str);
 
 tree(parsed);
-
-console.log(cmdStack);
 serialCmd(cmdStack);
-
-return;
