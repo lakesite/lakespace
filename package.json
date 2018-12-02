@@ -21,7 +21,7 @@
     "browser",
     "tabs"
   ],
-  "author": "Andrew Duncan",
+  "author": "Andrew Duncan <andy@lakesite.net>",
   "license": "GPL-2.0",
   "bin": {
     "lakespace": "./lakespace.js"
