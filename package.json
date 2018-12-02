@@ -1,0 +1,33 @@
+{
+  "name": "lakespace",
+  "version": "1.0.0",
+  "description": "Browser and coding workspaces with toml.",
+  "main": "lakespace.js",
+  "dependencies": {
+    "toml": "^2.3.3",
+    "valid-url": "^1.0.9"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lakesite/linksync-workspace.git"
+  },
+  "keywords": [
+    "automated",
+    "workspace",
+    "browser",
+    "tabs"
+  ],
+  "author": "Andrew Duncan",
+  "license": "GPL-2.0",
+  "bin": {
+    "lakespace": "./lakespace.js"
+  },
+  "bugs": {
+    "url": "https://github.com/lakesite/lakespace/issues"
+  },
+  "homepage": "https://github.com/lakesite/lakespace#readme"
+}
