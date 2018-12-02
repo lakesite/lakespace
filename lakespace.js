@@ -101,7 +101,7 @@ if (args != '') {
   configuration = args;
 }
 
-var str = fs.readFileSync("./workspace.toml", 'utf8')
+var str = fs.readFileSync(configuration, 'utf8')
 var parsed = toml.parse(str);
 
 tree(parsed);
