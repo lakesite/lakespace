@@ -1,12 +1,28 @@
+[lakespace]
+desktop = "3"
+
 [applicant]
 browser = 'firefox'
 tabs = [
 	"https://github.com/lakesite/lakespace",
 	"https://github.com/mozilla/multi-account-containers/issues/319",
 	"https://github.com/toml-lang/toml",
-	"https://github.com/ogt/valid-url"
+	"https://github.com/ogt/valid-url",
+	"https://www.npmjs.com/package/lakespace"
 ]
 
 [ide]
 editor = 'atom'
 path = ''
+
+[terminal_1]
+working_directory = "/home/andy/projects"
+command_1 = "ls -la"
+command_2 = "cd ~/projects; ls -lah"
+offset = "500,500"
+
+[terminal_2]
+desktop = "4"
+working_directory = "/var/www/development/"
+command = "ls"
+offset = "250,2048"

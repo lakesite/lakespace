@@ -21,7 +21,7 @@ var cmdStack = [];
 var browser = 'firefox';
 var editor = 'atom';
 var project_root = '.';
-
+var desktop = "0";
 
 var serialCmd = function() {
   // this works on ubuntu, required sleep or we'll miss tabs.
@@ -59,6 +59,35 @@ var ide_branch = function(data) {
 }
 
 
+var terminal_branch = function(data) {
+  var working_directory = "~";
+  var terminal_command = "gnome-terminal --window";
+  var offset = "0,0";
+
+  Object.keys(data).forEach(function(key) {
+    var val = data[key];
+
+    if (key == 'desktop') {
+      cmdStack.push("sleep 1; wmctrl -r :ACTIVE: -t " + val);
+    }
+
+    if (key == 'offset') {
+      offset = val;
+    }
+
+    if (key == 'working_directory') {
+      working_directory = val;
+    }
+
+    if (key.startsWith('command_')) {
+      terminal_command = terminal_command + " --tab --working-directory=" + working_directory + " -- bash -c \"" + val + "; bash\"";
+    }
+  });
+  cmdStack.push(terminal_command);
+  cmdStack.push("sleep 1; wmctrl -r :ACTIVE: -e 0," + offset + ",-1,-1");
+}
+
+
 var browser_branch = function(data) {
   Object.keys(data).forEach(function(key) {
     var val = data[key];
@@ -78,17 +107,37 @@ var browser_branch = function(data) {
 }
 
 
+var lakespace_branch = function(data) {
+  Object.keys(data).forEach(function(key) {
+    var val = data[key];
+
+    if (key == 'desktop') {
+      desktop = val;
+      // pre-empt switch to desktop as normal behavior;
+      cmdStack.push(`wmctrl -s ${desktop}`);
+    }
+  });
+}
+
+
 var tree = function (data) {
   Object.keys(data).forEach(function(key) {
     var val = data[key];
 
-    // could be a new window group, flag it
+    // could be a new section group, flag it
     if (typeof val == 'object') {
-      switch(key) {
+      // so we can have multiple groups, split on _
+      var index = key.split('_')[0];
+      switch(index) { // key
+        case 'lakespace':
+          lakespace_branch(val);
+          break;
         case 'ide':
           ide_branch(val);
           cmdStack.push(editor + ' ' + project_root);
           break;
+        case 'terminal':
+          terminal_branch(val);
         default:
           newWindow = true;
           browser_branch(val);
@@ -105,4 +154,5 @@ var str = fs.readFileSync(configuration, 'utf8')
 var parsed = toml.parse(str);
 
 tree(parsed);
+// console.log("Done processing.");
 serialCmd(cmdStack);
