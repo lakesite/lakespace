@@ -3,12 +3,16 @@
 // #############################################################################
 // lakespace
 //
-// given a workspace.toml toml file, open chrome/firefox windows with tabs
+// given a workspace.toml toml file, open chrome/firefox windows, ide, terminals.
 //
 // #############################################################################
 'use strict';
 
-const [,, ... args] = process.argv
+const path = require("path");
+
+const argv = require('minimist')(process.argv.slice(2));
+
+// const [,, ... args] = process.argv
 
 var toml = require('toml');
 var validUrl = require('valid-url');
@@ -146,13 +150,12 @@ var tree = function (data) {
   });
 }
 
-if (args != '') {
-  configuration = args;
+if (argv["_"][0] !== undefined) {
+  configuration = argv["_"][0];
 }
 
-var str = fs.readFileSync(configuration, 'utf8')
+var str = fs.readFileSync(path.resolve(__dirname, configuration), 'utf8')
 var parsed = toml.parse(str);
 
 tree(parsed);
-// console.log("Done processing.");
 serialCmd(cmdStack);
