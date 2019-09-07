@@ -49,8 +49,19 @@ var tabs = function(data) {
 
 
 var ide_branch = function(data) {
+  var offset = "0,0";
+  var resize = "-1,-1";
+
   Object.keys(data).forEach(function(key) {
     var val = data[key];
+
+    if (key == 'offset') {
+      offset = val;
+    }
+
+    if (key == 'resize') {
+      resize = val;
+    }
 
     if (key == 'editor') {
       editor = val;
@@ -60,13 +71,16 @@ var ide_branch = function(data) {
       project_root = val;
     }
   });
+  cmdStack.push("sleep 1; wmctrl -r :ACTIVE: -e 0," + offset + "," + resize);
 }
 
 
 var terminal_branch = function(data) {
   var working_directory = "~";
   var terminal_command = "gnome-terminal --window";
+  var tabcount = 0;
   var offset = "0,0";
+  var resize = "-1,-1";
 
   Object.keys(data).forEach(function(key) {
     var val = data[key];
@@ -79,22 +93,42 @@ var terminal_branch = function(data) {
       offset = val;
     }
 
+    if (key == 'resize') {
+      resize = val;
+    }
+
     if (key == 'working_directory') {
       working_directory = val;
     }
 
     if (key.startsWith('command_')) {
-      terminal_command = terminal_command + " --tab --working-directory=" + working_directory + " -- bash -c \"" + val + "; bash\"";
+      if (tabcount == 0) {
+        terminal_command = terminal_command + " --working-directory=" + working_directory + " -- bash -c \"" + val + "; bash\"";
+        tabcount++;
+      } else {
+        terminal_command = terminal_command + " --tab --working-directory=" + working_directory + " -- bash -c \"" + val + "; bash\"";
+      }
     }
   });
   cmdStack.push(terminal_command);
-  cmdStack.push("sleep 1; wmctrl -r :ACTIVE: -e 0," + offset + ",-1,-1");
+  cmdStack.push("sleep 1; wmctrl -r :ACTIVE: -e 0," + offset + "," + resize);
 }
 
 
 var browser_branch = function(data) {
+  var offset = "0,0";
+  var resize = "-1,-1";
+
   Object.keys(data).forEach(function(key) {
     var val = data[key];
+
+    if (key == 'offset') {
+      offset = val;
+    }
+
+    if (key == 'resize') {
+      resize = val;
+    }
 
     if (key == 'browser') {
       browser = val;
@@ -108,6 +142,7 @@ var browser_branch = function(data) {
       cmdStack.push(val + ' . ');
     }
   });
+  cmdStack.push("sleep 1; wmctrl -r :ACTIVE: -e 0," + offset + "," + resize);
 }
 
 

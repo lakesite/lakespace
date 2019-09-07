@@ -36,6 +36,13 @@ started under or moved to.
 Applying desktop and offset to another section will move the current
 selected window to the appropriate desktop with x,y offset.
 
+Applying resize will resize the browser, ide or terminal.  These
+features currently only work under Linux.
+
+The default position (0,0) is the top left, and by default the window
+of the application is not resized.
+
+
 ```
 [lakespace]
 desktop = "3"
@@ -49,6 +56,8 @@ tabs = [
 ]
 
 [ws2]
+offset = "1940,50"
+resize = "1800,500"
 browser = 'chromium-browser'
 tabs = [
 	"http://news.ycombinator.com/",
@@ -60,6 +69,8 @@ editor = 'atom'
 path = ''
 
 [terminal_1]
+offset = "3860,50"
+resize = "1800,750"
 working_directory = "/home/"
 command = "ls -la"
 command = "cd ~/projects/; ls -la"
