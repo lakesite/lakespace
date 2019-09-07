@@ -154,7 +154,7 @@ if (argv["_"][0] !== undefined) {
   configuration = argv["_"][0];
 }
 
-var str = fs.readFileSync(path.resolve(__dirname, configuration), 'utf8')
+var str = fs.readFileSync(path.resolve(process.cwd(), configuration), 'utf8')
 var parsed = toml.parse(str);
 
 tree(parsed);

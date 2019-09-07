@@ -1,7 +1,7 @@
 {
   "name": "lakespace",
-  "version": "1.0.3",
-  "description": "Browser and coding workspaces with toml.",
+  "version": "1.0.4",
+  "description": "Browser/IDE/terminal coding workspaces with toml.",
   "main": "lakespace.js",
   "dependencies": {
     "minimist": "^1.2.0",
