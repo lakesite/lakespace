@@ -103,10 +103,10 @@ var terminal_branch = function(data) {
 
     if (key.startsWith('command_')) {
       if (tabcount == 0) {
-        terminal_command = terminal_command + " --working-directory=" + working_directory + " -- bash -c \"" + val + "; bash\"";
+        terminal_command = terminal_command + " --working-directory=" + working_directory + " -e \"bash -c '" + val + "; bash'\"";
         tabcount++;
       } else {
-        terminal_command = terminal_command + " --tab --working-directory=" + working_directory + " -- bash -c \"" + val + "; bash\"";
+        terminal_command = terminal_command + " --tab --working-directory=" + working_directory + " -e \"bash -c '" + val + "; bash'\"";
       }
     }
   });
