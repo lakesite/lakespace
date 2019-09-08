@@ -9,44 +9,36 @@
 'use strict';
 
 const path = require("path");
-
 const argv = require('minimist')(process.argv.slice(2));
+const cp = require('child_process');
+const sleep = require('sleep');
 
-// const [,, ... args] = process.argv
 
 var toml = require('toml');
 var validUrl = require('valid-url');
 var fs = require('fs');
-var cp = require('child_process');
 
 var configuration = "lakespace.toml";
-var newWindow = false;
 var cmdStack = [];
 var browser = 'firefox';
 var editor = 'atom';
 var project_root = '.';
 var desktop = "0";
 
-var serialCmd = function() {
-  // this works on ubuntu, required sleep or we'll miss tabs.
-  var cmd = cmdStack.join(" && sleep 1 && ");
-  cp.execSync(cmd);
-}
+// track full paths to prevent circular references
+var config_file_instances = [];
 
-var tabs = function(data) {
-  Object.keys(data).forEach(function(key) {
-    var val = data[key];
-    if (validUrl.isUri(val)) {
-      if (newWindow) {
-        cmdStack.push(browser + ' -new-window "' + val + '"');
-        newWindow = false;
-      } else {
-        cmdStack.push(browser + ' -new-tab "' + val + '"');
-      }
-    }
+
+var serial_cmd = function() {
+  Object.keys(cmdStack).forEach(function(key) {
+    var val = cmdStack[key];
+    // console.log(`Running command: ${val}`);
+    // need to make this work on different platforms.
+    var child = cp.spawn(val, { shell: '/bin/bash', stdio: 'ignore', detached: true});
+    child.unref();
+    sleep.sleep(1);
   });
 }
-
 
 var ide_branch = function(data) {
   var offset = "0,0";
@@ -71,7 +63,7 @@ var ide_branch = function(data) {
       project_root = val;
     }
   });
-  cmdStack.push("sleep 1; wmctrl -r :ACTIVE: -e 0," + offset + "," + resize);
+  cmdStack.push("wmctrl -r :ACTIVE: -e 0," + offset + "," + resize);
 }
 
 
@@ -86,7 +78,7 @@ var terminal_branch = function(data) {
     var val = data[key];
 
     if (key == 'desktop') {
-      cmdStack.push("sleep 1; wmctrl -r :ACTIVE: -t " + val);
+      cmdStack.push("wmctrl -r :ACTIVE: -t " + val);
     }
 
     if (key == 'offset') {
@@ -111,7 +103,7 @@ var terminal_branch = function(data) {
     }
   });
   cmdStack.push(terminal_command);
-  cmdStack.push("sleep 1; wmctrl -r :ACTIVE: -e 0," + offset + "," + resize);
+  cmdStack.push("wmctrl -r :ACTIVE: -e 0," + offset + "," + resize);
 }
 
 
@@ -135,14 +127,17 @@ var browser_branch = function(data) {
     }
 
     if (key == 'tabs') {
-      tabs(val);
+      // at least on ubuntu, launching firefox with multiple
+      // sites/tabs requires they be enclosed in quotes, as
+      // some urls will break otherwise.
+      cmdStack.push(browser + ' "' + val.join('" "') + '"');
     }
 
     if (key == 'editor') {
       cmdStack.push(val + ' . ');
     }
   });
-  cmdStack.push("sleep 1; wmctrl -r :ACTIVE: -e 0," + offset + "," + resize);
+  cmdStack.push("wmctrl -r :ACTIVE: -e 0," + offset + "," + resize);
 }
 
 
@@ -154,6 +149,10 @@ var lakespace_branch = function(data) {
       desktop = val;
       // pre-empt switch to desktop as normal behavior;
       cmdStack.push(`wmctrl -s ${desktop}`);
+    }
+
+    if (key.startsWith('include_')) {
+      parse_file(val);
     }
   });
 }
@@ -178,19 +177,30 @@ var tree = function (data) {
         case 'terminal':
           terminal_branch(val);
         default:
-          newWindow = true;
           browser_branch(val);
       }
     } // else { root property }
   });
 }
 
+
+var parse_file = function (config_file) {
+  if (config_file_instances.includes(config_file)) {
+    console.log(`Refusing to parse ${config_file} more than once.`)
+    return;
+  }
+  config_file_instances.push(config_file);
+
+  var str = fs.readFileSync(path.resolve(process.cwd(), config_file), 'utf8')
+  var parsed = toml.parse(str);
+
+  tree(parsed);
+}
+
+
 if (argv["_"][0] !== undefined) {
   configuration = argv["_"][0];
 }
 
-var str = fs.readFileSync(path.resolve(process.cwd(), configuration), 'utf8')
-var parsed = toml.parse(str);
-
-tree(parsed);
-serialCmd(cmdStack);
+parse_file(configuration);
+serial_cmd(cmdStack);
