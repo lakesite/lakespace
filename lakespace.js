@@ -8,6 +8,7 @@
 // #############################################################################
 'use strict';
 
+
 const path = require("path");
 const argv = require('minimist')(process.argv.slice(2));
 const cp = require('child_process');
@@ -18,25 +19,34 @@ var toml = require('toml');
 var validUrl = require('valid-url');
 var fs = require('fs');
 
+// defaults
 var configuration = "lakespace.toml";
-var cmdStack = [];
 var browser = 'firefox';
 var editor = 'atom';
 var project_root = '.';
 var desktop = "0";
 
+// when 1, only show commands but do not execute.
+var dryrun = 0;
+
 // track full paths to prevent circular references
 var config_file_instances = [];
+
+// array for commands
+var cmdStack = [];
 
 
 var serial_cmd = function() {
   Object.keys(cmdStack).forEach(function(key) {
     var val = cmdStack[key];
-    // console.log(`Running command: ${val}`);
-    // need to make this work on different platforms.
-    var child = cp.spawn(val, { shell: '/bin/bash', stdio: 'ignore', detached: true});
-    child.unref();
-    sleep.sleep(1);
+    if (dryrun == 1) {
+      console.log(`${val}`);
+    } else {
+      // need to make this work on different platforms.
+      var child = cp.spawn(val, { shell: '/bin/bash', stdio: 'ignore', detached: true});
+      child.unref();
+      sleep.sleep(1);
+    }
   });
 }
 
@@ -77,10 +87,6 @@ var terminal_branch = function(data) {
   Object.keys(data).forEach(function(key) {
     var val = data[key];
 
-    if (key == 'desktop') {
-      cmdStack.push("wmctrl -r :ACTIVE: -t " + val);
-    }
-
     if (key == 'offset') {
       offset = val;
     }
@@ -110,6 +116,7 @@ var terminal_branch = function(data) {
 var browser_branch = function(data) {
   var offset = "0,0";
   var resize = "-1,-1";
+  var browser_command = "";
 
   Object.keys(data).forEach(function(key) {
     var val = data[key];
@@ -198,9 +205,25 @@ var parse_file = function (config_file) {
 }
 
 
-if (argv["_"][0] !== undefined) {
-  configuration = argv["_"][0];
+var main = function() {
+  // before we do anything, let's ensure we have a supported
+  // platform
+  if (process.platform !== 'linux') {
+    console.log(`Platform '${process.platform}' is not supported.`);
+    process.exit(0);
+  }
+
+  if (argv["_"][0] !== undefined) {
+    configuration = argv["_"][0];
+  }
+
+  if (argv["dryrun"]) {
+    dryrun = 1;
+  }
+
+  parse_file(configuration);
+  serial_cmd(cmdStack);
 }
 
-parse_file(configuration);
-serial_cmd(cmdStack);
+
+main();

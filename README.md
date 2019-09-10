@@ -1,15 +1,27 @@
 # lakespace #
 
-workspace utility manager
+workspace configuration manager
 
-## Dependencies ##
+## Supported Platforms ##
 
-If you're using Linux, and want to use gnome-terminals for auto
-launching terminals, you need wmctrl.
+Currently, only Linux (and specifically Ubuntu) is supported.  Future
+versions may support OSX, FreeBSD and Windows.
 
 ## Installation ##
 
 npm install lakespace
+
+## Dependencies ##
+
+External tools are required to manage application windows, and the
+default terminal on Ubuntu (gnome-terminal).  Future versions will
+allow this to be configured and will have defaults (cmd, iTerm) for
+other platforms.
+
+    ### Linux ###
+
+    * gnome-terminal
+    * wmctrl
 
 ## Usage ##
 
@@ -17,7 +29,7 @@ Create a configuration file (lakespace.toml) and run:
 
     $ lakespace
 
-Or
+Or for a specific configuration:
 
     $ lakespace configuration.toml
 
