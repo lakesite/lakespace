@@ -24,5 +24,5 @@ offset = "500,500"
 [terminal_2]
 desktop = "4"
 working_directory = "/var/www/development/"
-command = "ls"
+command_1 = "ls"
 offset = "2048,250"

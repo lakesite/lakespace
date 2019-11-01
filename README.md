@@ -4,12 +4,29 @@ workspace configuration manager
 
 ## Supported Platforms ##
 
-Currently, only Linux (and specifically Ubuntu) is supported.  Future
-versions may support OSX, FreeBSD and Windows.
+1. Linux, specifically Ubuntu.
+2. Windows 10, with Widnows Terminal (preview)
+3. OSX/darwin
 
 ## Installation ##
 
-npm install lakespace
+I. Linux
+
+  1. Install npm and nodejs;
+  ``apt install npm``
+
+  2. using npm, install lakespace;
+  ``npm install lakespace``
+
+III. OSX
+
+  1. Install npm, using [Homebrew](https://brew.sh/)
+  ``brew install npm``
+
+  2. using npm, install lakespace;
+  ``npm install lakespace``
+
+  See: [this helpful link](https://github.com/nodejs/node-gyp/wiki/Updating-npm's-bundled-node-gyp) if you run into issues with sleep on osx.
 
 ## Dependencies ##
 

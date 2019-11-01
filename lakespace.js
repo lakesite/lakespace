@@ -19,6 +19,9 @@ var toml = require('toml');
 var validUrl = require('valid-url');
 var fs = require('fs');
 
+// supported platforms;
+var supported_platforms = ['win32', 'linux', 'darwin']
+
 // defaults
 var configuration = "lakespace.toml";
 var browser = 'firefox';
@@ -42,13 +45,44 @@ var serial_cmd = function() {
     if (dryrun == 1) {
       console.log(`${val}`);
     } else {
-      // need to make this work on different platforms.
-      var child = cp.spawn(val, { shell: '/bin/bash', stdio: 'ignore', detached: true});
-      child.unref();
-      sleep.sleep(1);
+      switch(process.platform) {
+        case 'win32':
+          // handle win10+
+          break;
+        case 'darwin':
+          // handle osx
+          var child = cp.spawn(val, { shell: '/bin/bash', stdio: 'ignore', detached: true});
+          child.unref();
+          sleep.sleep(1);
+          break;
+        case 'linux':
+          var child = cp.spawn(val, { shell: '/bin/bash', stdio: 'ignore', detached: true});
+          child.unref();
+          sleep.sleep(1);
+        default:
+          // panic!
+          break;
+      }
     }
   });
 }
+
+
+var resize_app = function(offset, resize) {
+  switch(process.platform) {
+    case 'linux':
+      cmdStack.push("wmctrl -r :ACTIVE: -e 0," + offset + "," + resize);
+      break;
+    case 'win32':
+      break;
+    case 'darwin':
+      break;
+    default:
+      // panic
+      break;
+  }
+}
+
 
 var ide_branch = function(data) {
   var offset = "0,0";
@@ -73,13 +107,43 @@ var ide_branch = function(data) {
       project_root = val;
     }
   });
-  cmdStack.push("wmctrl -r :ACTIVE: -e 0," + offset + "," + resize);
+
+  switch(process.platform) {
+    case 'linux':
+      cmdStack.push(editor + ' ' + project_root);
+      break;
+    case 'darwin':
+      // if project_root is ., need to get cwd
+      cmdStack.push('open -n -a ' + editor + ' --args ' + project_root);
+      break;
+    case 'win32':
+      break;
+    default:
+      // panic
+      break;
+  }
+  resize_app(offset, resize);
 }
 
 
 var terminal_branch = function(data) {
   var working_directory = "~";
-  var terminal_command = "gnome-terminal --window";
+  var terminal_command = ""
+  switch(process.platform) {
+    case 'linux':
+      terminal_command = "gnome-terminal --window";
+      break;
+    case 'darwin':
+      terminal_command = "open -n -a iterm2";
+      break;
+    case 'win32':
+      terminal_command = "wt.exe"
+      break;
+    default:
+      // panic
+      break;
+  }
+
   var tabcount = 0;
   var offset = "0,0";
   var resize = "-1,-1";
@@ -109,7 +173,7 @@ var terminal_branch = function(data) {
     }
   });
   cmdStack.push(terminal_command);
-  cmdStack.push("wmctrl -r :ACTIVE: -e 0," + offset + "," + resize);
+  resize_app(offset, resize);
 }
 
 
@@ -134,17 +198,41 @@ var browser_branch = function(data) {
     }
 
     if (key == 'tabs') {
-      // at least on ubuntu, launching firefox with multiple
-      // sites/tabs requires they be enclosed in quotes, as
-      // some urls will break otherwise.
-      cmdStack.push(browser + ' "' + val.join('" "') + '"');
+      switch(process.platform) {
+        case 'linux':
+          // at least on ubuntu, launching firefox with multiple
+          // sites/tabs requires they be enclosed in quotes, as
+          // some urls will break otherwise.
+          cmdStack.push(browser + ' "' + val.join('" "') + '"');
+          break;
+        case 'darwin':
+          cmdStack.push('open -n -a ' + browser + ' --args "' + val.join('" "') + '"');
+          break;
+        case 'win32':
+          break;
+        default:
+          // panic
+          break;
+      }
     }
 
     if (key == 'editor') {
-      cmdStack.push(val + ' . ');
+      switch(process.platform) {
+        case 'linux':
+          cmdStack.push(val + ' . ');
+          break;
+        case 'darwin':
+          cmdStack.push('open -n -a ' + val + '--args . ');
+          break;
+        case 'win32':
+          break;
+        default:
+          // panic
+          break;
+      }
     }
   });
-  cmdStack.push("wmctrl -r :ACTIVE: -e 0," + offset + "," + resize);
+  resize_app(offset, resize);
 }
 
 
@@ -155,7 +243,19 @@ var lakespace_branch = function(data) {
     if (key == 'desktop') {
       desktop = val;
       // pre-empt switch to desktop as normal behavior;
-      cmdStack.push(`wmctrl -s ${desktop}`);
+      switch(process.platform) {
+        case 'darwin':
+          // applescript inline
+          break;
+        case 'win32':
+          break;
+        case 'linux':
+          cmdStack.push(`wmctrl -s ${desktop}`);
+          break;
+        default:
+          // panic!
+          break;
+      }
     }
 
     if (key.startsWith('include_')) {
@@ -163,7 +263,6 @@ var lakespace_branch = function(data) {
     }
   });
 }
-
 
 var tree = function (data) {
   Object.keys(data).forEach(function(key) {
@@ -179,7 +278,6 @@ var tree = function (data) {
           break;
         case 'ide':
           ide_branch(val);
-          cmdStack.push(editor + ' ' + project_root);
           break;
         case 'terminal':
           terminal_branch(val);
@@ -208,7 +306,7 @@ var parse_file = function (config_file) {
 var main = function() {
   // before we do anything, let's ensure we have a supported
   // platform
-  if (process.platform !== 'linux') {
+  if (!supported_platforms.includes(process.platform)) {
     console.log(`Platform '${process.platform}' is not supported.`);
     process.exit(0);
   }
