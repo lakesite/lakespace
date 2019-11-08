@@ -22,6 +22,11 @@ var fs = require('fs');
 // supported platforms;
 var supported_platforms = ['win32', 'linux', 'darwin']
 
+// platform specific dependencies
+if process.platform == 'darwin' {
+  var applescript = require('applescript')
+}
+
 // defaults
 var configuration = "lakespace.toml";
 var browser = 'firefox';
@@ -104,7 +109,7 @@ var ide_branch = function(data) {
     }
 
     if (key == 'project_root') {
-      project_root = val;
+      project_root = path.resolve(val);
     }
   });
 

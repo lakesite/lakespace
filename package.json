@@ -4,6 +4,7 @@
   "description": "Browser/IDE/terminal coding workspaces with toml.",
   "main": "lakespace.js",
   "dependencies": {
+    "applescript": "^1.0.0",
     "minimist": "^1.2.0",
     "sleep": "^6.1.0",
     "toml": "^2.3.3",
